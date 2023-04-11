@@ -1,0 +1,20 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:11
+    container_name: backend_challenge_postgres
+    ports:
+      - '5439:5432'
+    volumes:
+      - postgres-db:/data/postgres
+    environment:
+      PGUSER: dataentry_app
+      POSTGRES_USER: dataentry_app
+      POSTGRES_PASSWORD: dataentry_app
+      PGDATA: /data/postgres
+
+
+volumes:
+  postgres-db:
+    driver: local

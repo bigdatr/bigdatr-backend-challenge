@@ -1,0 +1,35 @@
+{
+  "ts-node": {
+    // these options are overrides used only by ts-node
+    // same as the --compilerOptions flag and the TS_NODE_COMPILER_OPTIONS environment variable
+    "compilerOptions": {
+      "module": "commonjs",
+      // No idea why is is required, but for some reason ts-node breaks on a gromit error in user-sdk
+      // without this. Even though we have a declaration file for gromit
+      "noImplicitAny": false
+    }
+  },
+  "compilerOptions": {
+    "allowJs": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "composite": true,
+    "declaration": true,
+    "declarationDir": "dist",
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "outDir": "dist",
+    "paths": {
+      "~/*": ["src/*"],
+    },
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
+    "target": "ES2021",
+    "typeRoots": ["src/@types", "node_modules/@types"]
+  },
+  "include": ["src"]
+}
