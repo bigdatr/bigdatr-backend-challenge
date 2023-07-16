@@ -7,6 +7,7 @@ import publish from './publish';
 import search from './search';
 import config from '../../config';
 import Build from '../build/Build';
+import { getReleaseWithBuilds, getReleaseLineage } from '../../api/releaseLineage'
 
 export type ReleasePrimitive = Awaited<ReturnType<Release['asPrimitive']>>;
 export type ReleaseData = {
@@ -25,7 +26,9 @@ export default class Release {
     static create = create;
     static update = update;
     static publish = publish;
-    static search = search;
+    static getReleaseWithBuilds = getReleaseWithBuilds;
+    static getReleaseLineage = getReleaseLineage;
+    
 
     private data: ReleaseData;
     type: 'release';
