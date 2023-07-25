@@ -24,7 +24,7 @@ export async function handleRequest(
                 throw Boom.badRequest('Invalid request body');
             }
         })();
-
+        
         const handler = routes[parsedBody.method];
 
         if (!handler) throw Boom.notFound();

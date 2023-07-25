@@ -1,0 +1,8 @@
+To access api "releaseLineage"
+
+POST http://localhost:4556/rpc
+body {
+  "method" : "releaseLineage",
+  "payload" : {}
+}
+

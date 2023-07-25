@@ -1,6 +1,6 @@
 import Boom from '@hapi/boom';
 import config from '../../config';
-import Release, {ReleaseData} from './Release';
+import Release, {ReleaseData,ReleaseLineageData} from './Release';
 import {ReleaseGetSchema, ReleaseGetManySchema} from './schemas';
 
 export async function getById(input: ReleaseGetSchema) {
@@ -38,4 +38,21 @@ export async function getMany(input: ReleaseGetManySchema) {
     )) as ReleaseData[];
 
     return releaseDataList.map((releaseData) => new Release(releaseData));
+}
+
+export async function getReleaseLineage() { 
+    const {db} = await config();
+    const releaseLineageData = await db.manyOrNone(`
+        SELECT 
+            b.id as "build_id",
+            r.id as "release_id",
+            b.name as "build_name",
+            r.name as "release_name",
+            r.status as "status"
+        FROM builds b
+            LEFT JOIN release_selections rs on b.id = rs.build_id
+            LEFT JOIN releases r on r.id = rs.release_id   
+        ORDER BY r.id DESC,b.id DESC;
+    `) as ReleaseLineageData[];
+    return releaseLineageData;
 }

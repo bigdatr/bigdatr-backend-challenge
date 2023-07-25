@@ -1,12 +1,13 @@
 import {ReleaseStatus} from './schemas';
 
-import {getById, getByIdOrThrow, getMany} from './get';
+import {getById, getByIdOrThrow, getMany,getReleaseLineage} from './get';
 import update from './update';
 import create from './create';
 import publish from './publish';
 import search from './search';
 import config from '../../config';
 import Build from '../build/Build';
+import { StringValidation } from 'zod';
 
 export type ReleasePrimitive = Awaited<ReturnType<Release['asPrimitive']>>;
 export type ReleaseData = {
@@ -17,7 +18,13 @@ export type ReleaseData = {
     updated_at: Date;
     status: ReleaseStatus;
 };
-
+export type ReleaseLineageData = { 
+    build_id: number;
+    release_id: number;
+    build_name: string;
+    release_name: string;
+    status: string;
+}
 export default class Release {
     static getByIdOrThrow = getByIdOrThrow;
     static getById = getById;
@@ -26,7 +33,7 @@ export default class Release {
     static update = update;
     static publish = publish;
     static search = search;
-
+    static getReleaseLineage = getReleaseLineage;
     private data: ReleaseData;
     type: 'release';
 
