@@ -9,6 +9,11 @@ export const releaseSelectionSchema = z.object({
     endDate: z.date()
 });
 
+export const builds = z.object({
+    id: z.number().int(),
+    name: z.string()
+});
+
 export const releaseGetSchema = z.object({
     id: z.number().int(),
     includeArchived: z.boolean().optional()
@@ -53,6 +58,11 @@ export const releasePublishSchema = z.object({
     id: z.number().int()
 });
 
+export const releaseLineage = z.object({
+    id: z.number().int(),
+    builds: z.array(builds)
+});
+
 export type ReleaseCreateSchema = z.infer<typeof releaseCreateSchema>;
 export type ReleaseGetManySchema = z.infer<typeof releaseGetManySchema>;
 export type ReleaseGetSchema = z.infer<typeof releaseGetSchema>;
@@ -61,3 +71,5 @@ export type ReleaseSearchSchema = z.infer<typeof releaseSearchSchema>;
 export type ReleaseSelection = z.infer<typeof releaseSelectionSchema>;
 export type ReleaseStatus = z.infer<typeof releaseStatusSchema>;
 export type ReleaseUpdateSchema = z.infer<typeof releaseUpdateSchema>;
+export type ReleaseLineage = z.infer<typeof releaseLineage>;
+export type ReleaseLineageBuilds = z.infer<typeof builds>;

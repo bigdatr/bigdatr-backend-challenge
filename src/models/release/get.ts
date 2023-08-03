@@ -1,6 +1,7 @@
 import Boom from '@hapi/boom';
 import config from '../../config';
 import Release, {ReleaseData} from './Release';
+import ReleaseLineAge, {ReleaseLineAgeData} from './ReleaseLineAge';
 import {ReleaseGetSchema, ReleaseGetManySchema} from './schemas';
 
 export async function getById(input: ReleaseGetSchema) {

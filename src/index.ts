@@ -4,10 +4,12 @@ import {handleRequest} from './util/request';
 // api imports
 import * as build from './api/build';
 import * as release from './api/release';
+import * as history from './api/releaseLineAge';
 
 const routes = {
     ...build,
-    ...release
+    ...release,
+    ...history
 };
 
 const init = async () => {
