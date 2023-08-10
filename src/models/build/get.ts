@@ -40,3 +40,19 @@ export async function getMany(input: BuildGetManySchema) {
 
     return buildsDataList.map((releaseData) => new Build(releaseData));
 }
+
+export async function getBuildRelation() {
+    const {db} = await config();
+    // const {idList} = input;
+
+    const buildsDataList = (await db.manyOrNone(
+        `
+        select *, rs.release_id
+        from public.builds b
+        inner join release_selections rs ON rs.build_id = b.id
+        order by rs.release_id DESC, b.id DESC;
+    `
+    )) as BuildData[];
+
+    return buildsDataList.map((releaseData) => new Build(releaseData));
+}

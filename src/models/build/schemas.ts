@@ -26,7 +26,9 @@ export const buildCreateSchema = z.object({
     endDate: z.date()
 });
 
+export const buildRelationSchema = z.object({});
 export type BuildCreateSchema = z.infer<typeof buildCreateSchema>;
 export type BuildGetSchema = z.infer<typeof buildGetSchema>;
 export type BuildGetManySchema = z.infer<typeof buildGetManySchema>;
 export type BuildSearchSchema = z.infer<typeof buildSearchSchema>;
+export type buildRelationSchema = z.infer<typeof buildRelationSchema>;

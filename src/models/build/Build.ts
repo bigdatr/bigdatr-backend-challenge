@@ -1,4 +1,4 @@
-import {getById, getByIdOrThrow, getMany} from './get';
+import {getBuildRelation, getById, getByIdOrThrow, getMany} from './get';
 import create from './create';
 import search from './search';
 
@@ -17,6 +17,7 @@ export default class Build {
     static getMany = getMany;
     static create = create;
     static search = search;
+    static getBuildRelation = getBuildRelation
 
     private data: BuildData;
     type: 'build';
