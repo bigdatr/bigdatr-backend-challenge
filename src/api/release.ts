@@ -6,6 +6,8 @@ import {releaseUpdateSchema} from '../models/release/schemas';
 import {releasePublishSchema} from '../models/release/schemas';
 import {releaseGetManySchema} from '../models/release/schemas';
 import {releaseSearchSchema} from '../models/release/schemas';
+import Build from './../models/build/Build';
+import { buildRelationSchema } from './../models/build/schemas';
 
 export const releaseCreate = createHandler(
     () => releaseCreateSchema,
@@ -51,5 +53,12 @@ export const releaseSearch = createHandler(
     () => releaseSearchSchema,
     async (input) => {
         return await Release.search(input);
+    }
+);
+
+export const releaseLineage = createHandler(
+    () => buildRelationSchema,
+    async () => {
+        return await Build.getBuildRelation();
     }
 );
