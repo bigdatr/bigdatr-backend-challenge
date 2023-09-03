@@ -4,6 +4,7 @@ import {handleRequest} from './util/request';
 // api imports
 import * as build from './api/build';
 import * as release from './api/release';
+import {getBuildsAndRelease} from './models/release/helper';
 
 const routes = {
     ...build,
@@ -30,6 +31,16 @@ const init = async () => {
             });
 
             return response;
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/releaseLineage/{releaseId}',
+        handler: async (request, h) => {
+            const releaseId = +request.params.releaseId;
+            const buildsAndRelease = await getBuildsAndRelease(releaseId);
+            return h.response(buildsAndRelease);
         }
     });
 
