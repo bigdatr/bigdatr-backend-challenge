@@ -8,6 +8,8 @@ To start up the postgres db via docker compose, run `yarn db:up`
 
 Then to create the databases for local and testing run:
 
+// TODO: Remove; No longer needed as the setup uses dataentry_app as db, only tests db needed to be created
+
 ```
 createdb -p 5439 -h localhost -U dataentry_app -e dataentry
 ```
