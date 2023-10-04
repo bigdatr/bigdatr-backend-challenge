@@ -4,7 +4,8 @@ import {
     releaseGetMany,
     releaseUpdate,
     releasePublish,
-    releaseSearch
+    releaseSearch,
+    releaseLineage
 } from '../release';
 import {v4 as uuid} from 'uuid';
 import Boom from '@hapi/boom';
@@ -272,5 +273,67 @@ describe('selections', () => {
         // Bad Dates
         await expect(() => update({startDate: new Date('2021-01-01')})).rejects.toThrowError();
         await expect(() => update({endDate: new Date('2024-01-01')})).rejects.toThrowError();
+    });
+});
+
+describe('lineage', () => {
+    it('should throw an error if release does not exists', async () => {
+        await expect(releaseLineage({id: 99999})).rejects.toThrowError();
+    });
+
+    it('should return directly and indirectly attached builds base on release parent_id', async () => {
+        const indirectBuildName = `${uuid()}-indirect`;
+        const directBuildName = `${uuid()}-direct`;
+
+        const indirectBuild = (
+            await buildCreate({
+                name: indirectBuildName,
+                requiresReview: false,
+                startDate: new Date('2022-01-01'),
+                endDate: new Date('2022-12-31')
+            })
+        ).id;
+
+        const parentId = (
+            await releaseCreate({
+                name: 'Parent',
+                selections: [
+                    {
+                        build: indirectBuild,
+                        startDate: new Date('2022-01-01'),
+                        endDate: new Date('2022-12-31')
+                    }
+                ]
+            })
+        ).id;
+
+        const directBuild = (
+            await buildCreate({
+                name: directBuildName,
+                requiresReview: false,
+                startDate: new Date('2022-01-01'),
+                endDate: new Date('2022-12-31')
+            })
+        ).id;
+
+        const releaseId = (
+            await releaseCreate({
+                name: 'Child',
+                parentId,
+                selections: [
+                    {
+                        build: directBuild,
+                        startDate: new Date('2022-01-01'),
+                        endDate: new Date('2022-12-31')
+                    }
+                ]
+            })
+        ).id;
+
+        const lineageBuilds = await releaseLineage({id: releaseId});
+
+        expect(lineageBuilds.length).toEqual(2);
+        expect(lineageBuilds[0].name).toEqual(directBuildName);
+        expect(lineageBuilds[1].name).toEqual(indirectBuildName);
     });
 });
