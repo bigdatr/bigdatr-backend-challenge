@@ -1,6 +1,6 @@
 import {ReleaseStatus} from './schemas';
 
-import {getById, getByIdOrThrow, getMany} from './get';
+import {getById, getByIdOrThrow, getMany, getLineage} from './get';
 import update from './update';
 import create from './create';
 import publish from './publish';
@@ -18,6 +18,11 @@ export type ReleaseData = {
     status: ReleaseStatus;
 };
 
+export type ReleaseLineageData = {
+    build_id: number;
+    release_id: string;
+};
+
 export default class Release {
     static getByIdOrThrow = getByIdOrThrow;
     static getById = getById;
@@ -26,6 +31,7 @@ export default class Release {
     static update = update;
     static publish = publish;
     static search = search;
+    static getLineage = getLineage;
 
     private data: ReleaseData;
     type: 'release';

@@ -4,7 +4,8 @@ import {
     releaseGetMany,
     releaseUpdate,
     releasePublish,
-    releaseSearch
+    releaseSearch,
+    releaseLineage
 } from '../release';
 import {v4 as uuid} from 'uuid';
 import Boom from '@hapi/boom';
@@ -272,5 +273,137 @@ describe('selections', () => {
         // Bad Dates
         await expect(() => update({startDate: new Date('2021-01-01')})).rejects.toThrowError();
         await expect(() => update({endDate: new Date('2024-01-01')})).rejects.toThrowError();
+    });
+});
+
+describe('releaseLineage', () => {
+    it(`can get a release lineage`, async () => {
+        const buildName = uuid();
+        const build = (
+            await buildCreate({
+                name: buildName,
+                requiresReview: false,
+                startDate: new Date('2022-01-01'),
+                endDate: new Date('2022-12-31')
+            })
+        ).id;
+
+        const createdRelease = await releaseCreate({
+            name,
+            selections: [
+                {
+                    build,
+                    startDate: new Date('2022-01-01'),
+                    endDate: new Date('2022-12-31')
+                }
+            ]
+        });
+
+        const releaseLineageData = await releaseLineage({})
+        
+        expect(releaseLineageData.length).toBeGreaterThan(0);
+        expect(releaseLineageData[0].release_id).toBe(createdRelease.id);
+        expect(releaseLineageData[0].build_id).toBe(build);
+    });
+
+    it(`can get a release lineage with multiple builds`, async () => {
+        const buildName = uuid();
+        const build = (
+            await buildCreate({
+                name: buildName,
+                requiresReview: false,
+                startDate: new Date('2022-01-01'),
+                endDate: new Date('2022-12-31')
+            })
+        ).id;
+
+        const buildName2 = uuid();
+        const build2 = (
+            await buildCreate({
+                name: buildName2,
+                requiresReview: false,
+                startDate: new Date('2022-01-01'),
+                endDate: new Date('2022-12-31')
+            })
+        ).id;
+
+        const createdRelease = await releaseCreate({
+            name,
+            selections: [
+                {
+                    build,
+                    startDate: new Date('2022-01-01'),
+                    endDate: new Date('2022-12-31')
+                },
+                {
+                    build: build2,
+                    startDate: new Date('2022-01-02'),
+                    endDate: new Date('2022-12-31')
+                }
+            ]
+        });
+
+        const releaseLineageData = await releaseLineage({})
+        
+        expect(releaseLineageData.length).toBeGreaterThan(0);
+        expect(releaseLineageData[0].release_id).toBe(createdRelease.id);
+        expect(releaseLineageData[0].build_id).toBe(build2);
+        expect(releaseLineageData[1].release_id).toBe(createdRelease.id);
+        expect(releaseLineageData[1].build_id).toBe(build);
+    });
+
+    it(`can get a release lineage with parent release id`, async () => {
+        const buildName = uuid();
+        const build = (
+            await buildCreate({
+                name: buildName,
+                requiresReview: false,
+                startDate: new Date('2022-01-01'),
+                endDate: new Date('2022-12-31')
+            })
+        ).id;
+
+        const createdRelease = await releaseCreate({
+            name,
+            selections: [
+                {
+                    build,
+                    startDate: new Date('2022-01-01'),
+                    endDate: new Date('2022-12-31')
+                },
+            ]
+        });
+
+        const createdRelease2 = await releaseCreate({
+            name,
+            parentId: createdRelease.id,
+            selections: [
+                {
+                    build,
+                    startDate: new Date('2022-01-01'),
+                    endDate: new Date('2022-12-31')
+                },
+            ]
+        });
+
+        const releaseLineageData = await releaseLineage({})
+
+        expect(releaseLineageData.length).toBeGreaterThan(0);
+        expect(releaseLineageData[0].release_id).toBe(createdRelease2.id);
+        expect(releaseLineageData[0].build_id).toBe(build);
+        expect(releaseLineageData[1].release_id).toBe(createdRelease.id);
+        expect(releaseLineageData[1].build_id).toBe(build);
+    });
+
+    it(`can get a release lineage with null build id`, async () => {
+        const createdRelease = await releaseCreate({
+            name,
+        });
+
+        const releaseLineageData = await releaseLineage({})
+        
+        expect(releaseLineageData.length).toBeGreaterThan(0);
+        expect(releaseLineageData[0].release_id).toBe(createdRelease.id);
+        expect(releaseLineageData[0].build_id).toBeNull;
     });
 });
