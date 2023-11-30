@@ -1,6 +1,6 @@
 import {createHandler} from '../util/handler';
 import Release from '../models/release/Release';
-import {releaseCreateSchema} from '../models/release/schemas';
+import {releaseCreateSchema, releaseLineageSchema} from '../models/release/schemas';
 import {releaseGetSchema} from '../models/release/schemas';
 import {releaseUpdateSchema} from '../models/release/schemas';
 import {releasePublishSchema} from '../models/release/schemas';
@@ -53,3 +53,10 @@ export const releaseSearch = createHandler(
         return await Release.search(input);
     }
 );
+
+export const releaseLineage = createHandler(
+    () => releaseLineageSchema,
+    async () => {
+        return await Release.getLineage();
+    }
+)
