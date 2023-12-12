@@ -4,6 +4,7 @@ import {handleRequest} from './util/request';
 // api imports
 import * as build from './api/build';
 import * as release from './api/release';
+import Release from './models/release/Release'
 
 const routes = {
     ...build,
@@ -30,6 +31,21 @@ const init = async () => {
             });
 
             return response;
+        }
+    });
+
+    server.route({
+        method: 'GET',
+        path: '/releaseLineage/{id}',
+        handler: async (request, h) => {
+            try {                
+                const lineAge = await Release.getLineage(request.params.id)
+                const response = {'result': lineAge}
+
+                return response;
+            } catch(e) {
+                console.log('exception occured:', e)
+            }
         }
     });
 
