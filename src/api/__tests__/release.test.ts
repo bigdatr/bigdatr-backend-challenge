@@ -4,7 +4,8 @@ import {
     releaseGetMany,
     releaseUpdate,
     releasePublish,
-    releaseSearch
+    releaseSearch,
+    releaseLineage
 } from '../release';
 import {v4 as uuid} from 'uuid';
 import Boom from '@hapi/boom';
@@ -272,5 +273,130 @@ describe('selections', () => {
         // Bad Dates
         await expect(() => update({startDate: new Date('2021-01-01')})).rejects.toThrowError();
         await expect(() => update({endDate: new Date('2024-01-01')})).rejects.toThrowError();
+    });
+});
+
+describe('release lineage', () => {
+    it('will return an array of objects containing release and build details for a given release ID and its ancestors', async () => {
+        const build1 = (
+            await buildCreate({
+                name: uuid(),
+                requiresReview: false,
+                startDate: new Date('2023-01-01'),
+                endDate: new Date('2023-02-28')
+            })
+        ).id;
+
+        const release1 = await releaseCreate({
+            name: `Release ${uuid()} - Lineage`,
+            selections: [
+                {
+                    build: build1,
+                    startDate: new Date('2023-01-01'),
+                    endDate: new Date('2023-02-28')
+                }
+            ]
+        });
+        await releasePublish({id: release1.id});
+
+        const build2 = (
+            await buildCreate({
+                name: uuid(),
+                requiresReview: false,
+                startDate: new Date('2023-03-01'),
+                endDate: new Date('2023-06-30')
+            })
+        ).id;
+
+        const release2 = await releaseCreate({
+            name: `Release ${uuid()} - Lineage`,
+            parentId: release1.id,
+            selections: [
+                {
+                    build: build2,
+                    startDate: new Date('2023-03-01'),
+                    endDate: new Date('2023-06-30')
+                }
+            ]
+        });
+        await releasePublish({id: release2.id});
+
+        const lineage = await releaseLineage({
+            id: release2.id
+        });
+        expect(lineage.length).toBe(2);
+
+        expect(lineage[0].releaseId).toBeDefined();
+        expect(lineage[0].buildId).toBeDefined();
+        expect(lineage[0].releaseId).toBe(release2.id);
+        expect(lineage[0].buildId).toBe(build2);
+        expect(lineage[0].releaseDetails.parentId).toBe(release1.id);
+        expect(lineage[0].releaseDetails.status).toBe('LIVE');
+
+        expect(lineage[1].releaseId).toBeDefined();
+        expect(lineage[1].buildId).toBeDefined();
+        expect(lineage[1].releaseId).toBe(release1.id);
+        expect(lineage[1].buildId).toBe(build1);
+        expect(lineage[1].releaseDetails.parentId).toBeNull();
+        expect(lineage[1].releaseDetails.status).toBe('PREVIOUS');
+    });
+
+    it('will handle lineage for a release without a parent', async () => {
+        const build1 = (
+            await buildCreate({
+                name: uuid(),
+                requiresReview: false,
+                startDate: new Date('2023-01-01'),
+                endDate: new Date('2023-02-28')
+            })
+        ).id;
+
+        const release1 = await releaseCreate({
+            name: `Release ${uuid()} - Lineage`,
+            selections: [
+                {
+                    build: build1,
+                    startDate: new Date('2023-01-01'),
+                    endDate: new Date('2023-02-28')
+                }
+            ]
+        });
+        await releasePublish({id: release1.id});
+
+        const lineage = await releaseLineage({id: release1.id});
+        expect(lineage.length).toBe(1);
+        expect(lineage[0].releaseDetails.id).toBe(release1.id);
+        expect(lineage[0].releaseDetails.parentId).toBeNull();
+    });
+
+    it('will handle lineage for an unpublished release', async () => {
+        const build1 = (
+            await buildCreate({
+                name: uuid(),
+                requiresReview: false,
+                startDate: new Date('2023-01-01'),
+                endDate: new Date('2023-02-28')
+            })
+        ).id;
+
+        const release1 = await releaseCreate({
+            name: `Release ${uuid()} - Lineage`,
+            selections: [
+                {
+                    build: build1,
+                    startDate: new Date('2023-01-01'),
+                    endDate: new Date('2023-02-28')
+                }
+            ]
+        });
+
+        const lineage = await releaseLineage({id: release1.id});
+        expect(lineage.length).toBe(1);
+        expect(lineage[0].releaseDetails.status).toBe('DRAFT');
+    });
+
+    it('will throw a 404 Not Found error for non-existent release', async () => {
+        const nonExistentId = 999999; // Replace with a non-existent ID in your system
+        await expect(() => releaseLineage({id: nonExistentId})).rejects.toThrowError('Not Found');
     });
 });
